@@ -1,0 +1,77 @@
+name: Release Lib
+on:
+  workflow_call:
+    inputs:
+      container:
+        description: The Docker container to run in
+        type: string
+        required: true
+      name:
+        description: The name of the workflow
+        type: string
+        required: true
+      binary_name:
+        description: The file-name of the binary
+        type: string
+        required: true
+      binary_path:
+        description: The path to the outputted binary directory
+        type: string
+        required: true
+      configure_args:
+        description: Arguments for the configuration step
+        type: string
+        required: false
+      include_path:
+        description: Path to the directory containing include directory. Used for libraries
+        type: string
+        required: true
+      include_dir:
+        description: Name of the include directory
+        type: string
+        required: true
+      relative_path:
+        description: Relative path from the include directory to the project root
+        type: string
+        required: true
+      tar_name:
+        description: Name of the archive to generate and upload
+        type: string
+        required: true
+jobs:
+  Linux:
+    strategy:
+      fail-fast: false
+    runs-on: [self-hosted, docker, builder]
+    name: ${{ inputs.name }}
+    container:
+      image: ${{ inputs.container }}
+      options: --user 0:0
+      volumes:
+        - /home/buildbot/.ssh:/root/.ssh
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Waf Configure
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 15
+          command: python3 waf configure --git_protocol=git@ ${{ inputs.configure_args }}
+      - name: Waf Build
+        run: |
+          echo "::add-matcher::.github/gcc-problem-matcher.json"
+          python3 waf
+      - name: Waf Test
+        run: python3 waf --run_tests
+      - name: Make include directory
+        run: mkdir include
+      - name: Copy Headers to folder
+        run: cp --parents `find ./${{ inputs.include_dir }} -maxdepth 1 -name \*.h*` ${{ inputs.relative_path }}include/
+        working-directory: ${{ inputs.include_path }}
+      - name: Create Tarball
+        run: tar -czvf ${{ inputs.tar_name }} include -C ${{ inputs.binary_path }} ${{ inputs.binary_name }}
+      - name: Upload Tarball to release
+        run: gh release upload ${{ github.event.release.tag_name }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
