@@ -1,4 +1,4 @@
-name: Release Lib
+name: Release Exe
 on:
   workflow_call:
     inputs:
