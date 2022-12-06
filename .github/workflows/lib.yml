@@ -74,4 +74,4 @@ jobs:
       - name: Upload Tarball to release
         run: gh release upload ${{ github.event.release.tag_name }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
