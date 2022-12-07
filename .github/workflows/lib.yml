@@ -69,19 +69,19 @@ jobs:
       - name: Copy Headers to folder
         run: cp --parents `find ./${{ inputs.include_dir }} -maxdepth 1 -name \*.h*` ${{ inputs.relative_path }}include/
         working-directory: ${{ inputs.include_path }}
-      - name: Create Tarball
-        run: tar -czvf ${{ inputs.tar_name }} include -C ${{ inputs.binary_path }} ${{ inputs.binary_name }}
-      - name: Create Release
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ github.branch }}
-          prerelease: true
-          title: ${{ github.branch }}
-          files: |
-            LICENSE.rst
-            NEWS.rst
-      - name: Upload Tarball to release
-        run: gh release upload ${{ github.branch }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Create Tarball
+      #   run: tar -czvf ${{ inputs.tar_name }} include -C ${{ inputs.binary_path }} ${{ inputs.binary_name }}
+      # - name: Create Release
+      #   uses: marvinpinto/action-automatic-releases@latest
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     automatic_release_tag: ${{ github.branch }}
+      #     prerelease: true
+      #     title: ${{ github.branch }}
+      #     files: |
+      #       LICENSE.rst
+      #       NEWS.rst
+      # - name: Upload Tarball to release
+      #   run: gh release upload ${{ github.branch }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
