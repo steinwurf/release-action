@@ -71,7 +71,17 @@ jobs:
         working-directory: ${{ inputs.include_path }}
       - name: Create Tarball
         run: tar -czvf ${{ inputs.tar_name }} include -C ${{ inputs.binary_path }} ${{ inputs.binary_name }}
+      - name: Create Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: ${{ github.event.tag }}
+          prerelease: true
+          title: ${{ github.event.tag }}
+          files: |
+            LICENSE.rst
+            NEWS.rst
       - name: Upload Tarball to release
         run: gh release upload ${{ github.event.release.tag_name }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
