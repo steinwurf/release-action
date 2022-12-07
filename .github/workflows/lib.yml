@@ -75,13 +75,13 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ github.branch }}
+          automatic_release_tag: ${{ github.ref_name }}
           prerelease: true
-          title: ${{ github.branch }}
+          title: ${{ github.ref_name }}
           files: |
             LICENSE.rst
             NEWS.rst
       - name: Upload Tarball to release
-        run: gh release upload ${{ github.branch }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
+        run: gh release upload ${{ github.ref_name }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
