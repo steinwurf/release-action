@@ -46,6 +46,8 @@ jobs:
         run: python3 waf --run_tests
       - name: Waf Package
         run: python3 waf package
+      - name: Rename Tar
+        run: mv ${{ github.repository }}_${{ github.ref_name }}.tar.gz ${{ inputs.tar_name }}
       - name: Create Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
