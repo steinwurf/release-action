@@ -64,13 +64,8 @@ jobs:
           python3 waf
       - name: Waf Test
         run: python3 waf --run_tests
-      - name: Make include directory
-        run: mkdir include
-      - name: Copy Headers to folder
-        run: cp --parents `find ./${{ inputs.include_dir }} -maxdepth 1 -name \*.h*` ${{ inputs.relative_path }}include/
-        working-directory: ${{ inputs.include_path }}
-      - name: Create Tarball
-        run: tar -czvf ${{ inputs.tar_name }} include -C ${{ inputs.binary_path }} ${{ inputs.binary_name }}
+      - name: Waf Package
+        run: python3 waf package
       - name: Create Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
@@ -78,9 +73,6 @@ jobs:
           automatic_release_tag: ${{ github.ref_name }}
           prerelease: true
           title: ${{ github.ref_name }}
-          files: |
-            LICENSE.rst
-            NEWS.rst
       - name: Upload Tarball to release
         run: gh release upload ${{ github.ref_name }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
         env:
