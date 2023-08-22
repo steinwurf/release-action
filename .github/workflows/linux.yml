@@ -1,63 +1,60 @@
 name: Release
-on:
-  workflow_call:
+'on':
+  workflow_dispatch:
     inputs:
-      container:
-        description: The Docker container to run in
-        type: string
-        required: true
-      name:
-        description: The name of the workflow
-        type: string
-        required: true
-      configure_args:
-        description: Arguments for the configuration step
-        type: string
+      extra_resolve_options:
+        description: Extra Resolve Options
         required: false
-      tar_name:
-        description: Name of the archive to generate and upload
-        type: string
-        required: true
+  push:
+    branches:
+    - master
+  pull_request:
 jobs:
   Linux:
     strategy:
       fail-fast: false
-    runs-on: [self-hosted, docker, builder]
+    runs-on:
+    - self-hosted
+    - docker
+    - builder
     name: ${{ inputs.name }}
     container:
       image: ${{ inputs.container }}
       options: --user 0:0
       volumes:
-        - /home/buildbot/.ssh:/root/.ssh
+      - /home/buildbot/.ssh:/root/.ssh
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-      - name: Waf Configure
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 3
-          timeout_minutes: 15
-          command: python3 waf configure --git_protocol=git@ ${{ inputs.configure_args }}
-      - name: Waf Build
-        run: |
-          echo "::add-matcher::.github/gcc-problem-matcher.json"
-          python3 waf
-      - name: Waf Test
-        run: python3 waf --run_tests
-      - name: Waf Package
-        run: python3 waf package
-      - name: Rename Tar
-        run: mv ${{ github.event.repository.name }}_${{ github.ref_name }}.tar.gz ${{ inputs.tar_name }}
-      - name: Create Release
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ github.ref_name }}
-          prerelease: true
-          title: ${{ github.ref_name }}
-      - name: Upload Tarball to release
-        run: gh release upload ${{ github.ref_name }} ${{ inputs.tar_name }}  --repo ${{ github.repository }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    - name: Waf Configure
+      uses: nick-fields/retry@v2
+      with:
+        max_attempts: 3
+        timeout_minutes: 15
+        command: python3 waf configure --git_protocol=git@ ${{ inputs.configure_args
+          }}
+    - name: Waf Build
+      run: 'echo "::add-matcher::.github/gcc-problem-matcher.json"
 
+        python3 waf
 
+        '
+    - name: Waf Test
+      run: python3 waf --run_tests
+    - name: Waf Package
+      run: python3 waf package
+    - name: Rename Tar
+      run: mv ${{ github.event.repository.name }}_${{ github.ref_name }}.tar.gz ${{
+        inputs.tar_name }}
+    - name: Create Release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        automatic_release_tag: ${{ github.ref_name }}
+        prerelease: true
+        title: ${{ github.ref_name }}
+    - name: Upload Tarball to release
+      run: gh release upload ${{ github.ref_name }} ${{ inputs.tar_name }}  --repo
+        ${{ github.repository }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
