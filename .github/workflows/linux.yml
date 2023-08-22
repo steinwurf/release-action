@@ -1,14 +1,23 @@
 name: Release
 'on':
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      extra_resolve_options:
-        description: Extra Resolve Options
+      container:
+        description: The Docker container to run in
+        type: string
+        required: true
+      name:
+        description: The name of the workflow
+        type: string
+        required: true
+      configure_args:
+        description: Arguments for the configuration step
+        type: string
         required: false
-  push:
-    branches:
-    - master
-  pull_request:
+      tar_name:
+        description: Name of the archive to generate and upload
+        type: string
+        required: true
 jobs:
   Linux:
     strategy:
@@ -31,8 +40,7 @@ jobs:
       with:
         max_attempts: 3
         timeout_minutes: 15
-        command: python3 waf configure --git_protocol=git@ ${{ inputs.configure_args
-          }}
+        command: python3 waf configure --git_protocol=git@ ${{ inputs.configure_args }}
     - name: Waf Build
       run: 'echo "::add-matcher::.github/gcc-problem-matcher.json"
 
